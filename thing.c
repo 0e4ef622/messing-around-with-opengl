@@ -1,7 +1,9 @@
 #include <stdio.h>
+#include <unistd.h>
 #include <stdlib.h>
 #include <GL/glew.h>
 #include <GL/freeglut.h>
+#include <pthread.h>
 
 #define WIDTH 700
 #define HEIGHT 700
@@ -13,9 +15,9 @@ unsigned int frames;
 GLfloat Vertices[] = {
     /* Position */         /* Colors */         /* Texture Coords */
     -0.5f, -0.5f, 0.0f,    1.0f, 0.0f, 0.0f,    0.0f, 0.0f,
-     0.5f, -0.5f, 0.0f,    0.0f, 1.0f, 0.0f,    2.0f, 0.0f,
-    -0.5f,  0.5f, 0.0f,    1.0f, 1.0f, 0.0f,    0.0f, 2.0f,
-     0.5f,  0.5f, 0.0f,    0.0f, 0.0f, 1.0f,    2.0f, 2.0f
+     0.5f, -0.5f, 0.0f,    0.0f, 1.0f, 0.0f,    1.0f, 0.0f,
+    -0.5f,  0.5f, 0.0f,    1.0f, 1.0f, 0.0f,    0.0f, 1.0f,
+     0.5f,  0.5f, 0.0f,    0.0f, 0.0f, 1.0f,    1.0f, 1.0f
      /*0.0f,  0.0f, 0.0f,    0.5f, 0.5f, 0.5f*/
 };
 GLuint Indices[] = {
@@ -26,6 +28,12 @@ GLuint Indices[] = {
     0, 4, 2,
     2, 4, 3
     */
+};
+GLfloat Projection_mat[] = {
+    1.5,   0,   0,   0,
+      0, 1.5,   0,   0,
+      0,   0,   1,   0,
+      0,   0,   0,   1
 };
 GLuint VBO,
        VAO,
@@ -48,10 +56,10 @@ const GLchar *Vtx_shader = "#version 330 core\n"
                            "uniform float time;\n"
                            "\n"
                            "void main() {\n"
-                           "    gl_Position = vec4(position.xyz, 1.0f);\n"
+                           "    float a = .5*cos(time);\n"
+                           "    float b = sin(time);\n"
+                           "    gl_Position = mat4(vec4(a, b, 0.0, 0.0), vec4(-b, a, 0.0, 0.0), vec4(0.0, 0.0, 1.0, 0.0), vec4(0.0, 0.0, 0.0, 1.0)) * vec4(position.xyz, 1.0f);\n"
                            "    color = vec4(in_color.xyz, 1.0f);\n"
-                           "    vec4 dbl_color = 2 * color;\n"
-                           "    color = (1-dbl_color)*time+dbl_color - color;\n"
                            "    tex_coord = vec2(in_tex_coord.x, 1 - in_tex_coord.y);\n"
                            "}";
 const GLchar *Frag_shader = "#version 330 core\n"
@@ -65,10 +73,8 @@ const GLchar *Frag_shader = "#version 330 core\n"
                             "uniform sampler2D texture2;\n"
                             "\n"
                             "void main() {\n"
-                            "    ex_color = mix(texture(texture1, tex_coord), texture(texture2, tex_coord), 0.5) * color;\n"
-                          /*"    vec4 dbl_color = 2 * ncolor;\n"
-                            "    ex_color = (1-dbl_color)*time+dbl_color - ncolor;\n"
-                          */"}";
+                            "    ex_color = mix(texture(texture1, tex_coord), texture(texture2, tex_coord), 0.5);\n"
+                            "}";
 
 int main(int argc, char **argv);
 void init(int argc, char **argv);
@@ -80,6 +86,7 @@ void VAO_setup();
 void mouse_func(int button, int state, int x, int y);
 void timer_func(int _);
 void texture_init(const char *filename, const char *filename2);
+void timer(int _);
 unsigned char *load_image(const char *filename, unsigned int *width, unsigned int *height);
 
 int main(int argc, char **argv) {
@@ -105,6 +112,8 @@ int main(int argc, char **argv) {
 
     glUseProgram(Shader_prgm);
 
+    pthread_t timer_thread;
+    pthread_create(&timer_thread, NULL, (void*(*)(void*)) timer, NULL); /* an ugly cast to silence some errors ¯\_(ツ)_/¯ */
     glutMainLoop();
 
     return 0;
@@ -154,11 +163,10 @@ void win_resize(int w, int h) {
     glViewport(0, 0, w, h);
 }
 
-GLfloat time = 0;
-float inc = .01;
+GLfloat teh_time = 0;
+float inc = .03;
+#define PI_2 (2.0f*3.141592653589793f)
 void win_render() {
-    time += inc;
-    if ((time > 1 && inc > 0) || (time < 0 && inc < 0)) inc = -inc;
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     glActiveTexture(GL_TEXTURE0);
@@ -168,7 +176,7 @@ void win_render() {
     glBindTexture(GL_TEXTURE_2D, Texture2_obj);
     glUniform1i(glGetUniformLocation(Shader_prgm, "texture2"), 1);
 
-    glUniform1f(glGetUniformLocation(Shader_prgm, "time"), time);
+    glUniform1f(glGetUniformLocation(Shader_prgm, "time"), teh_time);
 
     glBindVertexArray(VAO);
      glDrawElements(GL_TRIANGLES, sizeof(Indices) / sizeof(GLuint), GL_UNSIGNED_INT, 0);
@@ -302,6 +310,14 @@ void texture_init(const char *filename, const char *filename2) {
 
     glBindTexture(GL_TEXTURE_2D, 0);
 
+}
+
+void timer(int _) {
+    for (;;) {
+        teh_time += .003;
+        if (teh_time > PI_2) teh_time -= PI_2;
+        usleep(1000);
+    }
 }
 
 unsigned char *load_image(const char *filename, unsigned int *width, unsigned int *height) {
