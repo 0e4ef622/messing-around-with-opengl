@@ -88,10 +88,10 @@ void win_render();
 void compile_shaders();
 void link_shaders();
 void VAO_setup();
-void mouse_func(int button, int state, int x, int y);
-void timer_func(int _);
+void mouse_func(int button, int state);
+void timer_func();
 void texture_init(const char *filename, const char *filename2);
-void timer(int _);
+void timer();
 unsigned char *load_image(const char *filename, unsigned int *width, unsigned int *height);
 
 int main(int argc, char **argv) {
@@ -263,7 +263,7 @@ void VAO_setup() {
     glBindVertexArray(0);
 }
 
-void mouse_func(int button, int state, int x, int y) {
+void mouse_func(int button, int state) {
     if (button == GLUT_LEFT_BUTTON) {
         if (state == GLUT_DOWN) {
             glUniform1i(glGetUniformLocation(Shader_prgm, "invert"), 1);
@@ -274,7 +274,7 @@ void mouse_func(int button, int state, int x, int y) {
 }
 
 char fps_string[20];
-void timer_func(int _) {
+void timer_func() {
     snprintf(fps_string, 20, "%d FPS", frames * 4);
     glutSetWindowTitle(fps_string);
 
@@ -320,7 +320,7 @@ void texture_init(const char *filename, const char *filename2) {
 
 }
 
-void timer(int _) {
+void timer() {
     for (;;) {
         teh_time += .003;
         if (teh_time > PI_2) teh_time -= PI_2;
