@@ -71,9 +71,11 @@ const GLchar *Frag_shader = "#version 330 core\n"
                             "\n"
                             "uniform sampler2D texture1;\n"
                             "uniform sampler2D texture2;\n"
+                            "uniform bool invert;\n"
                             "\n"
                             "void main() {\n"
                             "    ex_color = mix(texture(texture1, tex_coord), texture(texture2, tex_coord), 0.5);\n"
+                            "    if (invert) ex_color = 1 - ex_color;\n"
                             "}";
 
 int main(int argc, char **argv);
@@ -259,9 +261,10 @@ void VAO_setup() {
 void mouse_func(int button, int state, int x, int y) {
     if (button == GLUT_LEFT_BUTTON) {
         if (state == GLUT_DOWN) {
-            glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-        } else
-            glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+            glUniform1i(glGetUniformLocation(Shader_prgm, "invert"), 1);
+        } else {
+            glUniform1i(glGetUniformLocation(Shader_prgm, "invert"), 0);
+        }
     }
 }
 
