@@ -58,9 +58,11 @@ const GLchar *Vtx_shader =
 "uniform mat4 projection_mat;\n"
 "\n"
 "void main() {\n"
-"    float a = cos(time);\n"
-"    float b = sin(time);\n"
-"    gl_Position = projection_mat * mat4(vec4(1.0, 0.0, 0.0, 0.0), vec4(0.0, a, b, 0.0), vec4(0.0, -b, a, 0.0), vec4(0.0, 0.0, 0.0, 1.0)) * vec4(position.xyz, 1.0f);\n"
+"    float a = cos(1.57079632679);\n" /* pi/2 */
+"    float b = sin(1.57079632679);\n"
+"    float c = cos(time);\n"
+"    float d = sin(time);\n"
+"    gl_Position = projection_mat * mat4(vec4(1.0, 0.0, 0.0, 0.0), vec4(0.0, a, b, 0.0), vec4(0.0, -b, a, 0.0), vec4(c*0.6, d*0.6, 0.5, 1.0)) * vec4(position.xyz, 1.0f);\n"
 "    color = vec4(in_color.xyz, 1.0f);\n"
 "    tex_coord = vec2(in_tex_coord.x, 1 - in_tex_coord.y);\n"
 "}";
@@ -148,7 +150,7 @@ void init(int argc, char **argv) {
 
     glutReshapeFunc(win_resize);
     glutDisplayFunc(win_render);
-    glutMouseFunc(mouse_func);
+    glutMouseFunc((void(*)(int,int,int,int)) mouse_func);
     glutTimerFunc(0, timer_func, 0);
 
 
