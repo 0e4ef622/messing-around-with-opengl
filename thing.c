@@ -30,10 +30,10 @@ GLuint Indices[] = {
     */
 };
 GLfloat Projection_mat[] = {
-    1.5,   0,   0,   0,
-      0, 1.5,   0,   0,
+      1,   0,   0,   0,
+      0,   1,   0,   0,
       0,   0,   1,   0,
-      0,   0,   0,   1
+      0,   0,   1,   1
 };
 GLuint VBO,
        VAO,
@@ -44,39 +44,42 @@ GLuint VBO,
        Texture1_obj,
        Texture2_obj;
 
-const GLchar *Vtx_shader = "#version 330 core\n"
-                           "\n"
-                           "layout (location = 0) in vec3 position;\n"
-                           "layout (location = 1) in vec3 in_color;\n"
-                           "layout (location = 2) in vec2 in_tex_coord;\n"
-                           "\n"
-                           "out vec4 color;\n"
-                           "out vec2 tex_coord;\n"
-                           "\n"
-                           "uniform float time;\n"
-                           "\n"
-                           "void main() {\n"
-                           "    float a = cos(time);\n"
-                           "    float b = sin(time);\n"
-                           "    gl_Position = mat4(vec4(1.0, 0.0, 0.0, 0.0), vec4(0.0, a, -b, 0.0), vec4(0.0, b, a, 0.0), vec4(0.0, 0.0, 0.0, 1.0)) * vec4(position.xyz, 1.0f);\n"
-                           "    color = vec4(in_color.xyz, 1.0f);\n"
-                           "    tex_coord = vec2(in_tex_coord.x, 1 - in_tex_coord.y);\n"
-                           "}";
-const GLchar *Frag_shader = "#version 330 core\n"
-                            "\n"
-                            "in vec4 color;\n"
-                            "in vec2 tex_coord;\n"
-                            "\n"
-                            "out vec4 ex_color;\n"
-                            "\n"
-                            "uniform sampler2D texture1;\n"
-                            "uniform sampler2D texture2;\n"
-                            "uniform bool invert;\n"
-                            "\n"
-                            "void main() {\n"
-                            "    ex_color = mix(texture(texture1, tex_coord), texture(texture2, tex_coord), 0.5);\n"
-                            "    if (invert) ex_color = 1 - ex_color;\n"
-                            "}";
+const GLchar *Vtx_shader =
+"#version 330 core\n"
+"\n"
+"layout (location = 0) in vec3 position;\n"
+"layout (location = 1) in vec3 in_color;\n"
+"layout (location = 2) in vec2 in_tex_coord;\n"
+"\n"
+"out vec4 color;\n"
+"out vec2 tex_coord;\n"
+"\n"
+"uniform float time;\n"
+"uniform mat4 projection_mat;\n"
+"\n"
+"void main() {\n"
+"    float a = cos(time);\n"
+"    float b = sin(time);\n"
+"    gl_Position = projection_mat * mat4(vec4(1.0, 0.0, 0.0, 0.0), vec4(0.0, a, b, 0.0), vec4(0.0, -b, a, 0.0), vec4(0.0, 0.0, 0.0, 1.0)) * vec4(position.xyz, 1.0f);\n"
+"    color = vec4(in_color.xyz, 1.0f);\n"
+"    tex_coord = vec2(in_tex_coord.x, 1 - in_tex_coord.y);\n"
+"}";
+const GLchar *Frag_shader =
+"#version 330 core\n"
+"\n"
+"in vec4 color;\n"
+"in vec2 tex_coord;\n"
+"\n"
+"out vec4 ex_color;\n"
+"\n"
+"uniform sampler2D texture1;\n"
+"uniform sampler2D texture2;\n"
+"uniform bool invert;\n"
+"\n"
+"void main() {\n"
+"    ex_color = mix(texture(texture1, tex_coord), texture(texture2, tex_coord), 0.5);\n"
+"    if (invert) ex_color = 1 - ex_color;\n"
+"}";
 
 int main(int argc, char **argv);
 void init(int argc, char **argv);
@@ -113,6 +116,8 @@ int main(int argc, char **argv) {
     }
 
     glUseProgram(Shader_prgm);
+
+    glUniformMatrix4fv(glGetUniformLocation(Shader_prgm, "projection_mat"), 1, GL_TRUE, Projection_mat);
 
     pthread_t timer_thread;
     pthread_create(&timer_thread, NULL, (void*(*)(void*)) timer, NULL); /* an ugly cast to silence some errors ¯\_(ツ)_/¯ */
