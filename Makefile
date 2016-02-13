@@ -1,2 +1,2 @@
 thing: thing.c
-	clang thing.c -lGL -lglut -lGLEW -lpthread -o thing
+	clang -Wall thing.c -lGL -lglut -lGLEW -lpthread -o thing
