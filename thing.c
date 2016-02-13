@@ -146,6 +146,9 @@ int main(int argc, char **argv) {
     pthread_create(&timer_thread, NULL, (void*(*)(void*)) timer, NULL); /* an ugly cast to silence some errors ¯\_(ツ)_/¯ */
     glutMainLoop();
 
+    glDeleteVertexArrays(1, &VAO);
+    glDeleteBuffers(1, &VBO);
+
     return 0;
 }
 
