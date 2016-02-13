@@ -33,7 +33,7 @@ GLfloat Projection_mat[] = {
       1,   0,   0,   0,
       0,   1,   0,   0,
       0,   0,   1,   0,
-      0,   0,   1,   1
+      0,   0,  .58,   1
 };
 GLuint VBO,
        VAO,
