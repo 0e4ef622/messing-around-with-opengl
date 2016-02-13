@@ -38,7 +38,8 @@ flags = [
 '-lGL',
 '-lglut',
 '-lGLEW',
-'-lpthread'
+'-lpthread',
+'-isystem'
 ]
 
 

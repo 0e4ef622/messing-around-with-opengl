@@ -83,11 +83,9 @@ const GLchar *Vtx_shader =
 "uniform mat4 projection_mat;\n"
 "\n"
 "void main() {\n"
-"    float a = cos(1.57079632679);\n" /* pi/2 */
-"    float b = sin(1.57079632679);\n"
-"    float c = cos(time);\n"
-"    float d = sin(time);\n"
-"    gl_Position = projection_mat * mat4(vec4(1.0, 0.0, 0.0, 0.0), vec4(0.0, a, b, 0.0), vec4(0.0, -b, a, 0.0), vec4(c*0.6, d*0.6, 0.5, 1.0)) * vec4(position.xyz, 1.0f);\n"
+"    float a = cos(time);\n"
+"    float b = sin(time);\n"
+"    gl_Position = projection_mat * mat4(vec4(1.0, 0.0, 0.0, 0.0), vec4(0.0, a, b, 0.0), vec4(0.0, -b, a, 0.0), vec4(0.0, 0.0, 0.5, 1.0)) * vec4(position.xyz, 1.0f);\n"
 "    tex_coord = vec2(in_tex_coord.x, 1 - in_tex_coord.y);\n"
 "}";
 const GLchar *Frag_shader =
@@ -187,6 +185,7 @@ void init(int argc, char **argv) {
     printf("OpenGL %s\n", glGetString(GL_VERSION));
     glViewport(0, 0, WIDTH, HEIGHT);
     glClearColor(0.8666f, 0.9333f, 1.0f, 1.0f);
+    glEnable(GL_DEPTH_TEST);
 }
 
 void win_resize(int w, int h) {
