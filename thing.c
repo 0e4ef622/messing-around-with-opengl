@@ -88,7 +88,8 @@ void VAO_setup();
 void mouse_func(int button, int state, int x, int y);
 void timer_func(int _);
 void texture_init(const char *filename, const char *filename2);
-void timer(int _);
+void timer();
+void another_timer();
 unsigned char *load_image(const char *filename, unsigned int *width, unsigned int *height);
 
 typedef struct {
@@ -125,6 +126,8 @@ int main(int argc, char **argv) {
 
     pthread_t timer_thread;
     pthread_create(&timer_thread, NULL, (void*(*)(void*)) timer, NULL); /* an ugly cast to silence some errors ¯\_(ツ)_/¯ */
+    pthread_t another_timer_thread;
+    pthread_create(&another_timer_thread, NULL, (void*(*)(void*)) another_timer, NULL);
     glutMainLoop();
 
     return 0;
@@ -179,12 +182,9 @@ float inc = .03;
 #define PI_2 (2.0f*3.141592653589793f)
 char invert = 0;
 void win_render() {
-    background.r = 1 - background.r;
-    background.g = 1 - background.g;
-    background.b = 1 - background.b;
-    glClearColor(background.r, background.g, background.b, background.a);
+
+    glClearColor(background.r, background.b, background.g, background.a);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    invert = !invert;
     glUniform1i(glGetUniformLocation(Shader_prgm, "invert"), invert);
 
     glActiveTexture(GL_TEXTURE0);
@@ -331,11 +331,21 @@ void texture_init(const char *filename, const char *filename2) {
 
 }
 
-void timer(int _) {
+void timer() {
     for (;;) {
         teh_time += .003;
         if (teh_time > PI_2) teh_time -= PI_2;
         usleep(1000);
+    }
+}
+
+void another_timer() {
+    while (1) {
+        background.r = 1 - background.r;
+        background.g = 1 - background.g;
+        background.b = 1 - background.b;
+        invert = !invert;
+        usleep(50000);
     }
 }
 
