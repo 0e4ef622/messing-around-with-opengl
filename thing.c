@@ -88,18 +88,8 @@ void VAO_setup();
 void mouse_func(int button, int state, int x, int y);
 void timer_func(int _);
 void texture_init(const char *filename, const char *filename2);
-void timer();
-void another_timer();
+void timer(int _);
 unsigned char *load_image(const char *filename, unsigned int *width, unsigned int *height);
-
-typedef struct {
-    float r;
-    float g;
-    float b;
-    float a;
-} rgba;
-
-rgba background = {0.86666f, 0.9333f, 1.0f, 1.0f};
 
 int main(int argc, char **argv) {
 
@@ -126,8 +116,6 @@ int main(int argc, char **argv) {
 
     pthread_t timer_thread;
     pthread_create(&timer_thread, NULL, (void*(*)(void*)) timer, NULL); /* an ugly cast to silence some errors ¯\_(ツ)_/¯ */
-    pthread_t another_timer_thread;
-    pthread_create(&another_timer_thread, NULL, (void*(*)(void*)) another_timer, NULL);
     glutMainLoop();
 
     return 0;
@@ -168,7 +156,7 @@ void init(int argc, char **argv) {
     printf("Using GLEW %s\n", glewGetString(GLEW_VERSION));
     printf("OpenGL %s\n", glGetString(GL_VERSION));
     glViewport(0, 0, WIDTH, HEIGHT);
-    glClearColor(background.r, background.g, background.b, background.a);
+    glClearColor(0.8666f, 0.9333f, 1.0f, 1.0f);
 }
 
 void win_resize(int w, int h) {
@@ -180,12 +168,8 @@ void win_resize(int w, int h) {
 GLfloat teh_time = 0;
 float inc = .03;
 #define PI_2 (2.0f*3.141592653589793f)
-char invert = 0;
 void win_render() {
-
-    glClearColor(background.r, background.b, background.g, background.a);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    glUniform1i(glGetUniformLocation(Shader_prgm, "invert"), invert);
 
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, Texture1_obj);
@@ -331,21 +315,11 @@ void texture_init(const char *filename, const char *filename2) {
 
 }
 
-void timer() {
+void timer(int _) {
     for (;;) {
         teh_time += .003;
         if (teh_time > PI_2) teh_time -= PI_2;
         usleep(1000);
-    }
-}
-
-void another_timer() {
-    while (1) {
-        background.r = 1 - background.r;
-        background.g = 1 - background.g;
-        background.b = 1 - background.b;
-        invert = !invert;
-        usleep(50000);
     }
 }
 
