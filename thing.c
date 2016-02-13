@@ -13,21 +13,48 @@ int Window,
     Height;
 unsigned int frames;
 GLfloat Vertices[] = {
-    /* Position */         /* Colors */         /* Texture Coords */
-    -0.5f, -0.5f, 0.0f,    1.0f, 0.0f, 0.0f,    0.0f, 0.0f,
-     0.5f, -0.5f, 0.0f,    0.0f, 1.0f, 0.0f,    1.0f, 0.0f,
-    -0.5f,  0.5f, 0.0f,    1.0f, 1.0f, 0.0f,    0.0f, 1.0f,
-     0.5f,  0.5f, 0.0f,    0.0f, 0.0f, 1.0f,    1.0f, 1.0f
-     /*0.0f,  0.0f, 0.0f,    0.5f, 0.5f, 0.5f*/
-};
-GLuint Indices[] = {
-    0, 1, 2,
-    1, 2, 3
-    /*
-    0, 4, 1,
-    0, 4, 2,
-    2, 4, 3
-    */
+    /* Position */        /* Texture Coords */
+    -0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
+     0.5f, -0.5f, -0.5f,  1.0f, 0.0f,
+     0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+     0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+    -0.5f,  0.5f, -0.5f,  0.0f, 1.0f,
+    -0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
+
+    -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+     0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
+     0.5f,  0.5f,  0.5f,  1.0f, 1.0f,
+     0.5f,  0.5f,  0.5f,  1.0f, 1.0f,
+    -0.5f,  0.5f,  0.5f,  0.0f, 1.0f,
+    -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+
+    -0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+    -0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+    -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+    -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+    -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+    -0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+
+     0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+     0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+     0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+     0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+     0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+     0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+
+    -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+     0.5f, -0.5f, -0.5f,  1.0f, 1.0f,
+     0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
+     0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
+    -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+    -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+
+    -0.5f,  0.5f, -0.5f,  0.0f, 1.0f,
+     0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+     0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+     0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+    -0.5f,  0.5f,  0.5f,  0.0f, 0.0f,
+    -0.5f,  0.5f, -0.5f,  0.0f, 1.0f
 };
 GLfloat Projection_mat[] = {
       1,   0,   0,   0,
@@ -37,7 +64,6 @@ GLfloat Projection_mat[] = {
 };
 GLuint VBO,
        VAO,
-       EBO,
        Vtx_shader_obj,
        Frag_shader_obj,
        Shader_prgm,
@@ -48,8 +74,7 @@ const GLchar *Vtx_shader =
 "#version 330 core\n"
 "\n"
 "layout (location = 0) in vec3 position;\n"
-"layout (location = 1) in vec3 in_color;\n"
-"layout (location = 2) in vec2 in_tex_coord;\n"
+"layout (location = 1) in vec2 in_tex_coord;\n"
 "\n"
 "out vec4 color;\n"
 "out vec2 tex_coord;\n"
@@ -63,13 +88,11 @@ const GLchar *Vtx_shader =
 "    float c = cos(time);\n"
 "    float d = sin(time);\n"
 "    gl_Position = projection_mat * mat4(vec4(1.0, 0.0, 0.0, 0.0), vec4(0.0, a, b, 0.0), vec4(0.0, -b, a, 0.0), vec4(c*0.6, d*0.6, 0.5, 1.0)) * vec4(position.xyz, 1.0f);\n"
-"    color = vec4(in_color.xyz, 1.0f);\n"
 "    tex_coord = vec2(in_tex_coord.x, 1 - in_tex_coord.y);\n"
 "}";
 const GLchar *Frag_shader =
 "#version 330 core\n"
 "\n"
-"in vec4 color;\n"
 "in vec2 tex_coord;\n"
 "\n"
 "out vec4 ex_color;\n"
@@ -188,7 +211,7 @@ void win_render() {
     glUniform1f(glGetUniformLocation(Shader_prgm, "time"), teh_time);
 
     glBindVertexArray(VAO);
-     glDrawElements(GL_TRIANGLES, sizeof(Indices) / sizeof(GLuint), GL_UNSIGNED_INT, 0);
+     glDrawArrays(GL_TRIANGLES, 0, sizeof(Vertices) / sizeof(GLuint) / 3);
     glBindVertexArray(0);
 
     frames++;
@@ -241,24 +264,17 @@ void link_shaders() {
 void VAO_setup() {
     glGenVertexArrays(1, &VAO);
     glGenBuffers(1, &VBO);
-    glGenBuffers(1, &EBO);
 
     glBindVertexArray(VAO);
-
-     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-     glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(Indices), Indices, GL_STATIC_DRAW);
 
      glBindBuffer(GL_ARRAY_BUFFER, VBO);
      glBufferData(GL_ARRAY_BUFFER, sizeof(Vertices), Vertices, GL_STATIC_DRAW);
 
-     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (GLvoid*) 0);
+     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat), (GLvoid*) 0);
      glEnableVertexAttribArray(0);
 
-     glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (GLvoid*) (sizeof(GLfloat) * 3));
+     glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat), (GLvoid*) (sizeof(GLfloat) * 3));
      glEnableVertexAttribArray(1);
-
-     glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (GLvoid*) (sizeof(GLfloat) * 6));
-     glEnableVertexAttribArray(2);
 
      glBindBuffer(GL_ARRAY_BUFFER, 0);
 
