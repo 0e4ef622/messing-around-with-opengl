@@ -65,6 +65,8 @@ GLfloat Projection_mat[] = {
       0,   0,  .58,   1
 };
 float Cam_rot = 0;
+char Freeze_time,
+     Cam_dir;
 GLuint VBO,
        VAO,
        Vtx_shader_obj,
@@ -110,7 +112,6 @@ const GLchar *Frag_shader =
 "    if (invert) ex_color = 1 - ex_color;\n"
 "}";
 
-char Cam_dir;
 #define LEFT -1;
 #define RIGHT 1;
 #define IDLE 0;
@@ -223,10 +224,12 @@ void win_render() {
     gettimeofday(&time, NULL);
     uint32_t time_us = time.tv_sec * 1000000 + time.tv_usec;
     float dtime_us = time_us - ptime_us;
-    teh_time += dtime_us / 1000000;
     ptime_us = time_us;
 
-    while (teh_time > PI_2) teh_time -= PI_2;
+    if (!Freeze_time) {
+        teh_time += dtime_us / 1000000;
+        while (teh_time > PI_2) teh_time -= PI_2;
+    }
 
     if (Cam_dir) Cam_rot += dtime_us * Cam_dir / 400000;
 
@@ -380,15 +383,34 @@ void texture_init(const char *filename, const char *filename2) {
 }
 
 void special_func(int key) {
-    if (key == GLUT_KEY_LEFT) {
-        Cam_dir = LEFT;
-    } else if (key == GLUT_KEY_RIGHT) {
-        Cam_dir = RIGHT;
+    switch (key) {
+
+        case GLUT_KEY_LEFT:
+            Cam_dir = LEFT;
+            break;
+
+        case GLUT_KEY_RIGHT:
+            Cam_dir = RIGHT;
+            break;
+
+        case GLUT_KEY_UP:
+            Freeze_time = 1;
+            break;
     }
 }
 
 void specialup_func(int key) {
-    if (key == GLUT_KEY_LEFT || key == GLUT_KEY_RIGHT) Cam_dir = IDLE;
+    switch (key) {
+
+        case GLUT_KEY_LEFT:
+        case GLUT_KEY_RIGHT:
+            Cam_dir = IDLE;
+            break;
+
+        case GLUT_KEY_UP:
+            Freeze_time = 0;
+            break;
+    }
 }
 
 unsigned char *load_image(const char *filename, unsigned int *width, unsigned int *height) {
