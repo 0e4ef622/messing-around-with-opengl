@@ -396,6 +396,8 @@ void special_func(int key) {
         case GLUT_KEY_UP:
             Freeze_time = 1;
             break;
+        case GLUT_KEY_DOWN:
+            glDisable(GL_MULTISAMPLE);
     }
 }
 
@@ -410,6 +412,8 @@ void specialup_func(int key) {
         case GLUT_KEY_UP:
             Freeze_time = 0;
             break;
+        case GLUT_KEY_DOWN:
+            glEnable(GL_MULTISAMPLE);
     }
 }
 
