@@ -129,6 +129,8 @@ void timer_func();
 void texture_init(const char *filename, const char *filename2);
 void special_func(int key);
 void specialup_func(int key);
+void keyboard_func(unsigned char key);
+void keyboardup_func(unsigned char key);
 unsigned char *load_image(const char *filename, unsigned int *width, unsigned int *height);
 
 int main(int argc, char **argv) {
@@ -194,6 +196,8 @@ void init(int argc, char **argv) {
     glutTimerFunc(0, timer_func, 0);
     glutSpecialFunc((void(*)(int,int,int))special_func);
     glutSpecialUpFunc((void(*)(int,int,int))specialup_func);
+    glutKeyboardFunc((void(*)(unsigned char,int,int))keyboard_func);
+    glutKeyboardUpFunc((void(*)(unsigned char,int,int))keyboardup_func);
 
 
     glewExperimental = GL_TRUE; /* don't segfault when i call glGenVertexArrays() */
@@ -396,6 +400,7 @@ void special_func(int key) {
         case GLUT_KEY_UP:
             Freeze_time = 1;
             break;
+
         case GLUT_KEY_DOWN:
             glDisable(GL_MULTISAMPLE);
     }
@@ -412,7 +417,46 @@ void specialup_func(int key) {
         case GLUT_KEY_UP:
             Freeze_time = 0;
             break;
+
         case GLUT_KEY_DOWN:
+            glEnable(GL_MULTISAMPLE);
+    }
+}
+
+void keyboard_func(unsigned char key) {
+    switch(key) {
+
+        case 'h':
+            Cam_dir = LEFT;
+            break;
+
+        case 'l':
+            Cam_dir = RIGHT;
+            break;
+
+        case 'k':
+            Freeze_time = 1;
+            break;
+
+        case 'j':
+            glDisable(GL_MULTISAMPLE);
+            break;
+    }
+}
+
+void keyboardup_func(unsigned char key) {
+    switch(key) {
+
+        case 'h':
+        case 'l':
+            Cam_dir = IDLE;
+            break;
+
+        case 'k':
+            Freeze_time = 0;
+            break;
+
+        case 'j':
             glEnable(GL_MULTISAMPLE);
     }
 }
