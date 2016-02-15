@@ -178,7 +178,7 @@ void init(int argc, char **argv) {
 
     glutInitWindowSize(WIDTH, HEIGHT);
 
-    glutInitDisplayMode(GLUT_DEPTH | GLUT_DOUBLE | GLUT_RGBA);
+    glutInitDisplayMode(GLUT_DEPTH | GLUT_DOUBLE | GLUT_RGBA | GLUT_MULTISAMPLE);
 
     Window = glutCreateWindow("hai");
 
