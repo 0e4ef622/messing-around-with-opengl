@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <math.h>
 #include <sys/types.h>
 #include <sys/time.h>
 #include <GL/glew.h>
@@ -63,6 +64,7 @@ GLfloat Projection_mat[] = {
       0,   0,   1,   0,
       0,   0,  .58,   1
 };
+float Cam_rot = 0;
 GLuint VBO,
        VAO,
        Vtx_shader_obj,
@@ -84,11 +86,12 @@ const GLchar *Vtx_shader =
 "\n"
 "uniform float time;\n"
 "uniform mat4 projection_mat;\n"
+"uniform mat4 cam;\n"
 "\n"
 "void main() {\n"
 "    float a = cos(time);\n"
 "    float b = sin(time);\n"
-"    gl_Position = projection_mat * mat4(vec4(1.0, 0.0, 0.0, 0.0), vec4(0.0, a, b, 0.0), vec4(0.0, -b, a, 0.0), vec4(0.0, 0.0, 0.5, 1.0)) * vec4(position.xyz, 1.0f);\n"
+"    gl_Position = projection_mat * cam * mat4(vec4(1.0, 0.0, 0.0, 0.0), vec4(0.0, a, b, 0.0), vec4(0.0, -b, a, 0.0), vec4(0.0, 0.0, 0, 1.0)) * vec4(position, 1.0f);\n"
 "    tex_coord = vec2(in_tex_coord.x, 1 - in_tex_coord.y);\n"
 "}";
 const GLchar *Frag_shader =
@@ -107,6 +110,12 @@ const GLchar *Frag_shader =
 "    if (invert) ex_color = 1 - ex_color;\n"
 "}";
 
+char Cam_dir;
+#define LEFT -1;
+#define RIGHT 1;
+#define IDLE 0;
+
+
 int main(int argc, char **argv);
 void init(int argc, char **argv);
 void win_resize(int w, int h);
@@ -117,6 +126,8 @@ void VAO_setup();
 void mouse_func(int button, int state);
 void timer_func();
 void texture_init(const char *filename, const char *filename2);
+void special_func(int key);
+void specialup_func(int key);
 unsigned char *load_image(const char *filename, unsigned int *width, unsigned int *height);
 
 int main(int argc, char **argv) {
@@ -180,6 +191,8 @@ void init(int argc, char **argv) {
     glutDisplayFunc(win_render);
     glutMouseFunc((void(*)(int,int,int,int)) mouse_func);
     glutTimerFunc(0, timer_func, 0);
+    glutSpecialFunc((void(*)(int,int,int))special_func);
+    glutSpecialUpFunc((void(*)(int,int,int))specialup_func);
 
 
     glewExperimental = GL_TRUE; /* don't segfault when i call glGenVertexArrays() */
@@ -215,6 +228,17 @@ void win_render() {
 
     while (teh_time > PI_2) teh_time -= PI_2;
 
+    if (Cam_dir) Cam_rot += dtime_us * Cam_dir / 400000;
+
+    float a = cosf(Cam_rot);
+    float b = sinf(Cam_rot);
+    float cam_mat[] = {
+        a, 0, b, 0,
+        0, 1, 0, 0,
+       -b, 0, a, .5,
+        0, 0, 0, 1
+    };
+
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     glActiveTexture(GL_TEXTURE0);
@@ -225,6 +249,7 @@ void win_render() {
     glUniform1i(glGetUniformLocation(Shader_prgm, "texture2"), 1);
 
     glUniform1f(glGetUniformLocation(Shader_prgm, "time"), teh_time);
+    glUniformMatrix4fv(glGetUniformLocation(Shader_prgm, "cam"), 1, GL_TRUE, cam_mat);
 
     glBindVertexArray(VAO);
      glDrawArrays(GL_TRIANGLES, 0, sizeof(Vertices) / sizeof(GLuint) / 3);
@@ -354,6 +379,17 @@ void texture_init(const char *filename, const char *filename2) {
 
 }
 
+void special_func(int key) {
+    if (key == GLUT_KEY_LEFT) {
+        Cam_dir = LEFT;
+    } else if (key == GLUT_KEY_RIGHT) {
+        Cam_dir = RIGHT;
+    }
+}
+
+void specialup_func(int key) {
+    if (key == GLUT_KEY_LEFT || key == GLUT_KEY_RIGHT) Cam_dir = IDLE;
+}
 
 unsigned char *load_image(const char *filename, unsigned int *width, unsigned int *height) {
 
