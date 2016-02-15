@@ -1,9 +1,10 @@
 #include <stdio.h>
-#include <unistd.h>
 #include <stdlib.h>
+#include <unistd.h>
+#include <sys/types.h>
+#include <sys/time.h>
 #include <GL/glew.h>
 #include <GL/freeglut.h>
-#include <pthread.h>
 
 #define WIDTH 700
 #define HEIGHT 700
@@ -70,6 +71,8 @@ GLuint VBO,
        Texture1_obj,
        Texture2_obj;
 
+uint32_t ptime_us;
+
 const GLchar *Vtx_shader =
 "#version 330 core\n"
 "\n"
@@ -114,7 +117,6 @@ void VAO_setup();
 void mouse_func(int button, int state);
 void timer_func();
 void texture_init(const char *filename, const char *filename2);
-void timer();
 unsigned char *load_image(const char *filename, unsigned int *width, unsigned int *height);
 
 int main(int argc, char **argv) {
@@ -142,8 +144,10 @@ int main(int argc, char **argv) {
 
     glUniformMatrix4fv(glGetUniformLocation(Shader_prgm, "projection_mat"), 1, GL_TRUE, Projection_mat);
 
-    pthread_t timer_thread;
-    pthread_create(&timer_thread, NULL, (void*(*)(void*)) timer, NULL); /* an ugly cast to silence some errors ¯\_(ツ)_/¯ */
+    struct timeval time;
+    gettimeofday(&time, NULL);
+    ptime_us = time.tv_sec * 1000000 + time.tv_usec;
+
     glutMainLoop();
 
     glDeleteVertexArrays(1, &VAO);
@@ -199,8 +203,18 @@ void win_resize(int w, int h) {
 
 GLfloat teh_time = 0;
 float inc = .03;
-#define PI_2 (2.0f*3.141592653589793f)
+#define PI_2 6.28318530718f
 void win_render() {
+
+    struct timeval time;
+    gettimeofday(&time, NULL);
+    uint32_t time_us = time.tv_sec * 1000000 + time.tv_usec;
+    float dtime_us = time_us - ptime_us;
+    teh_time += dtime_us / 1000000;
+    ptime_us = time_us;
+
+    while (teh_time > PI_2) teh_time -= PI_2;
+
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     glActiveTexture(GL_TEXTURE0);
@@ -340,13 +354,6 @@ void texture_init(const char *filename, const char *filename2) {
 
 }
 
-void timer() {
-    for (;;) {
-        teh_time += .003;
-        if (teh_time > PI_2) teh_time -= PI_2;
-        usleep(1000);
-    }
-}
 
 unsigned char *load_image(const char *filename, unsigned int *width, unsigned int *height) {
 
