@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <signal.h>
 #include <math.h>
 #include <sys/types.h>
 #include <sys/time.h>
@@ -131,9 +132,20 @@ void special_func(int key);
 void specialup_func(int key);
 void keyboard_func(unsigned char key);
 void keyboardup_func(unsigned char key);
+void handle_sig(int sig);
+void cleanup();
 unsigned char *load_image(const char *filename, unsigned int *width, unsigned int *height);
 
 int main(int argc, char **argv) {
+
+    /* clean up if killed */
+    struct sigaction sa;
+    sa.sa_handler = &handle_sig;
+    sa.sa_flags = SA_RESTART;
+    sigfillset(&sa.sa_mask);
+    sigaction(SIGHUP, &sa, NULL);
+    sigaction(SIGINT, &sa, NULL);
+
 
     init(argc, argv);
 
@@ -164,8 +176,7 @@ int main(int argc, char **argv) {
 
     glutMainLoop();
 
-    glDeleteVertexArrays(1, &VAO);
-    glDeleteBuffers(1, &VBO);
+    cleanup();
 
     return 0;
 }
@@ -459,6 +470,24 @@ void keyboardup_func(unsigned char key) {
         case 'j':
             glEnable(GL_MULTISAMPLE);
     }
+}
+
+void handle_sig(int signal) {
+    switch (signal) {
+        case SIGINT:
+            printf("Caught SIGINT, cleaning up...\n");
+            break;
+        case SIGHUP:
+            printf("Caught SIGHUP, cleaning up...\n");
+    }
+
+    glutLeaveMainLoop();
+}
+
+void cleanup() {
+    glDeleteVertexArrays(1, &VAO);
+    glDeleteBuffers(1, &VBO);
+    printf("potatos are done \n"); //???
 }
 
 unsigned char *load_image(const char *filename, unsigned int *width, unsigned int *height) {
